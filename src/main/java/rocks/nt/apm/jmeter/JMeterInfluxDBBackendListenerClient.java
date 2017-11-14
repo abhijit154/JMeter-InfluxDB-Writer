@@ -44,6 +44,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 	 */
 	private static final String KEY_USE_REGEX_FOR_SAMPLER_LIST = "useRegexForSamplerList";
 	private static final String KEY_TEST_NAME = "testName";
+	private static final String KEY_REGEX_MEASUREMENT = "suiteName";
 	private static final String KEY_NODE_NAME = "nodeName";
 	private static final String KEY_SAMPLERS_LIST = "samplersList";
 	private static final String KEY_RECORD_SUB_SAMPLES = "recordSubSamples";
@@ -63,6 +64,11 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 	 * Name of the test.
 	 */
 	private String testName;
+
+	/**
+	 * Name of the test.
+	 */
+	private String suiteName;
 
 	/**
 	 * Name of the name
@@ -124,7 +130,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
             getUserMetrics().add(sampleResult);
 
 			if ((null != regexForSamplerList && sampleResult.getSampleLabel().matches(regexForSamplerList)) || samplersToFilter.contains(sampleResult.getSampleLabel())) {
-				Point point = Point.measurement(RequestMeasurement.MEASUREMENT_NAME).time(
+				Point point = Point.measurement(suiteName +"_"+ RequestMeasurement.MEASUREMENT_NAME).time(
 						System.currentTimeMillis() * ONE_MS_IN_NANOSECONDS + getUniqueNumberForTheSamplerThread(), TimeUnit.NANOSECONDS)
 						.tag(RequestMeasurement.Tags.REQUEST_NAME, sampleResult.getSampleLabel()).addField(
 								RequestMeasurement.Fields.ERROR_COUNT, sampleResult.getErrorCount())
@@ -142,6 +148,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 		Arguments arguments = new Arguments();
 		arguments.addArgument(KEY_TEST_NAME, "Test");
 		arguments.addArgument(KEY_NODE_NAME, "Test-Node");
+		arguments.addArgument(KEY_REGEX_MEASUREMENT, "Suite");
 		arguments.addArgument(InfluxDBConfig.KEY_INFLUX_DB_HOST, "localhost");
 		arguments.addArgument(InfluxDBConfig.KEY_INFLUX_DB_PORT, Integer.toString(InfluxDBConfig.DEFAULT_PORT));
 		arguments.addArgument(InfluxDBConfig.KEY_INFLUX_DB_USER, "");
@@ -157,6 +164,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 	@Override
 	public void setupTest(BackendListenerContext context) throws Exception {
 		testName = context.getParameter(KEY_TEST_NAME, "Test");
+		suiteName = context.getParameter(KEY_REGEX_MEASUREMENT, "Suite");
 		randomNumberGenerator = new Random();
 		nodeName = context.getParameter(KEY_NODE_NAME, "Test-Node");
 
@@ -165,7 +173,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 		influxDB.write(
 				influxDBConfig.getInfluxDatabase(),
 				influxDBConfig.getInfluxRetentionPolicy(),
-				Point.measurement(TestStartEndMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+				Point.measurement(suiteName +"_"+ TestStartEndMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 						.tag(TestStartEndMeasurement.Tags.TYPE, TestStartEndMeasurement.Values.STARTED)
 						.tag(TestStartEndMeasurement.Tags.NODE_NAME, nodeName)
 						.addField(TestStartEndMeasurement.Fields.TEST_NAME, testName)
@@ -189,7 +197,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 		influxDB.write(
 				influxDBConfig.getInfluxDatabase(),
 				influxDBConfig.getInfluxRetentionPolicy(),
-				Point.measurement(TestStartEndMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+				Point.measurement(suiteName +"_"+ TestStartEndMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 						.tag(TestStartEndMeasurement.Tags.TYPE, TestStartEndMeasurement.Values.FINISHED)
 						.tag(TestStartEndMeasurement.Tags.NODE_NAME, nodeName)
 						.addField(TestStartEndMeasurement.Fields.TEST_NAME, testName)
@@ -257,7 +265,7 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 	 * Write thread metrics.
 	 */
 	private void addVirtualUsersMetrics(int minActiveThreads, int meanActiveThreads, int maxActiveThreads, int startedThreads, int finishedThreads) {
-		Builder builder = Point.measurement(VirtualUsersMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+		Builder builder = Point.measurement(suiteName +"_"+ VirtualUsersMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
 		builder.addField(VirtualUsersMeasurement.Fields.MIN_ACTIVE_THREADS, minActiveThreads);
 		builder.addField(VirtualUsersMeasurement.Fields.MAX_ACTIVE_THREADS, maxActiveThreads);
 		builder.addField(VirtualUsersMeasurement.Fields.MEAN_ACTIVE_THREADS, meanActiveThreads);
