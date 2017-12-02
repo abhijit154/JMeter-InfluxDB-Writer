@@ -98,7 +98,7 @@ public class JMeterInfluxDBImportFileClient extends AbstractBackendListenerClien
 			if ((null != regexForSamplerList && sampleResult.getSampleLabel().matches(regexForSamplerList)) || samplersToFilter.contains(sampleResult.getSampleLabel())) {
 				Point point = Point.measurement(suiteName +"_"+ RequestMeasurement.MEASUREMENT_NAME).time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 						.tag(RequestMeasurement.Tags.REQUEST_NAME, sampleResult.getSampleLabel()).addField(RequestMeasurement.Fields.ERROR_COUNT, sampleResult.getErrorCount())
-						.addField(RequestMeasurement.Fields.RESPONSE_TIME, sampleResult.getTime()).build();
+						.addField(RequestMeasurement.Fields.RESPONSE_TIME, sampleResult.getTime()).addField(RequestMeasurement.Fields.RESPONSE_CODE, sampleResult.getResponseCode()).build();
 				try {
 					exportFileWriter.append(point.lineProtocol());
 					exportFileWriter.newLine();

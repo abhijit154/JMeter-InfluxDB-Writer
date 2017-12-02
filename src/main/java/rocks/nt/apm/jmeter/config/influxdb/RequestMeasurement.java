@@ -57,5 +57,10 @@ public interface RequestMeasurement {
 		 * Node name field
 		 */
 		String NODE_NAME = "nodeName";
+
+		/**
+		 * Node name field
+		 */
+		String RESPONSE_CODE = "responseCode";
 	}
 }
